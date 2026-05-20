@@ -120,13 +120,13 @@
 
         // Listado de las 7 aplicaciones configuradas con sus respectivas imágenes
         const infoApps = [
-            { id: "1", nombre: "airtable", imagen: "imagenes/airtable.png" },
-            { id: "2", nombre: "explaineverything", imagen: "imagenes/explaineverything.png" },
-            { id: "3", nombre: "flipgrid", imagen: "imagenes/flipgrid.png" },
-            { id: "4", nombre: "goconqr", imagen: "imagenes/goconqr.png" },
-            { id: "5", nombre: "polleverywhere", imagen: "imagenes/polleverywhere.png" },
+            { id: "1", nombre: "AirTable", imagen: "imagenes/airtable.png" },
+            { id: "2", nombre: "ExplainEverything", imagen: "imagenes/explaineverything.png" },
+            { id: "3", nombre: "FlipGrid", imagen: "imagenes/flipgrid.png" },
+            { id: "4", nombre: "GoConqr", imagen: "imagenes/goconqr.png" },
+            { id: "5", nombre: "PollEverywhere", imagen: "imagenes/polleverywhere.png" },
             { id: "6", nombre: "scoopit", imagen: "imagenes/scoopit.png" },
-            { id: "7", nombre: "stormboard", imagen: "imagenes/stormboard.png" }
+            { id: "7", nombre: "Stormboard", imagen: "imagenes/stormboard.png" }
         ];
 
         const tablero = document.getElementById("tablero");
@@ -166,7 +166,7 @@
 
         // 2. ACCIÓN AL SELECCIONAR UNA CARTA
         function seleccionarCarta(id, nombre) {
-            if (confirm(`¿Quieres elegir la aplicación: ${nombre}? Esta acción no se puede deshacer.`)) {
+            if (confirm(`¿Quieres elegir esta aplicación? Esta acción no se puede deshacer.`)) {
                 // Modifica el estado en Firebase a 'false' (Ocupado)
                 update(cartasRef, { [id]: false });
                 alert(`¡Asignación guardada! Tu aplicación es: ${nombre}.`);
