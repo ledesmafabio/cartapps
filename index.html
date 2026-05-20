@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección de Aplicaciones</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; 
+            text-align: center; 
+            background: #f0f2f5; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        h1 { color: #1e293b; margin-bottom: 5px; }
+        p { color: #64748b; margin-bottom: 30px; }
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 20px; 
+            max-width: 900px; 
+            margin: 20px auto; 
+            padding: 10px;
+        }
+        
+        /* Estilos base de las cartas */
+        .card { 
+            height: 200px; 
+            background: #ffffff; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 600; 
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s; 
+            padding: 15px; 
+            box-sizing: border-box; 
+        }
+        
+        /* Estado Disponible (Azul) */
+        .card.disponible { 
+            background: #2563eb; 
+            color: white; 
+        }
+        .card.disponible:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 15px -3px rgba(37,99,235,0.3);
+            background: #1d4ed8;
+        }
+        
+        /* Estado Revelada / Ocupada (Gris) */
+        .card.revelada { 
+            background: #f1f5f9; 
+            color: #94a3b8; 
+            cursor: not-allowed; 
+            border: 2px dashed #cbd5e1; 
+        }
+        
+        .logo-placeholder { 
+            font-size: 2.5rem; 
+            margin-bottom: 12px; 
+        }
+        
+        .card-img {
+            width: 70px; 
+            height: 70px; 
+            object-fit: contain; 
+            margin-bottom: 12px;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .btn-reset { 
+            margin-top: 50px; 
+            padding: 10px 20px; 
+            background: #ef4444; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold;
+            opacity: 0.2; 
+            transition: opacity 0.2s;
+        }
+        .btn-reset:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <h1>Elige una aplicación para tu proyecto</h1>
+    <p>Toca una carta azul para descubrir tu aplicación asignada. Una vez seleccionada, dejará de estar disponible.</p>
+
+    <div class="grid" id="tablero"></div>
+
+    <button class="btn-reset" id="btnReset">Reiniciar Tablero (Profesor)</button>
+
+    <!-- Importación de Firebase mediante Módulos -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // ⚠️ PEGA AQUÍ TUS CREDENCIALES DE LA CONSOLA DE FIREBASE ⚠️
+        const firebaseConfig = {
+	apiKey: "AIzaSyAMPkjq7xwl8-6_gy307s8-3TnW7prIDEE",
+	authDomain: "cartapps-2b27c.firebaseapp.com",
+	projectId: "cartapps-2b27c",
+	storageBucket: "cartapps-2b27c.firebasestorage.app",
+	messagingSenderId: "325435010427",
+	appId: "1:325435010427:web:ed5ce6f7f072e8995761de"
+        };
+
+        // Inicializar la conexión
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const cartasRef = ref(db, "cartasClase");
+
+        // Listado de las 7 aplicaciones configuradas con sus respectivas imágenes
+        const infoApps = [
+            { id: "1", nombre: "airtable", imagen: "imagenes/airtable.png" },
+            { id: "2", nombre: "explaineverything", imagen: "imagenes/explaineverything.png" },
+            { id: "3", nombre: "flipgrid", imagen: "imagenes/flipgrid.png" },
+            { id: "4", nombre: "goconqr", imagen: "imagenes/goconqr.png" },
+            { id: "5", nombre: "polleverywhere", imagen: "imagenes/polleverywhere.png" },
+            { id: "6", nombre: "scoopit", imagen: "imagenes/scoopit.png" },
+            { id: "7", nombre: "stormboard", imagen: "imagenes/stormboard.png" }
+        ];
+
+        const tablero = document.getElementById("tablero");
+
+        // 1. ESCUCHAR CAMBIOS EN TIEMPO REAL (Actualiza las pantallas de todos los alumnos)
+        onValue(cartasRef, (snapshot) => {
+            const estados = snapshot.val() || {};
+            tablero.innerHTML = ""; // Limpiar el contenedor antes de redibujar los cambios
+
+            infoApps.forEach(app => {
+                // Si la carta no figura en la base de datos como falsa, se asume disponible (true)
+                const estaDisponible = estados[app.id] !== false; 
+
+                const cartaHTML = document.createElement("div");
+                cartaHTML.classList.add("card", estaDisponible ? "disponible" : "revelada");
+
+                if (estaDisponible) {
+                    // Diseño cuando está tapada
+                    cartaHTML.innerHTML = `
+                        <div class="logo-placeholder">❓</div>
+                        <div>Toca para elegir</div>
+                    `;
+                    // Evento de selección
+                    cartaHTML.addEventListener("click", () => seleccionarCarta(app.id, app.nombre));
+                } else {
+                    // Diseño cuando ya está revelada (Muestra la imagen del logo)
+                    cartaHTML.innerHTML = `
+                        <img src="${app.imagen}" alt="${app.nombre}" class="card-img">
+                        <div>${app.nombre}</div>
+                        <div style="font-size: 0.8rem; font-weight: normal; margin-top: 4px;">(Ocupada)</div>
+                    `;
+                }
+
+                tablero.appendChild(cartaHTML);
+            });
+        });
+
+        // 2. ACCIÓN AL SELECCIONAR UNA CARTA
+        function seleccionarCarta(id, nombre) {
+            if (confirm(`¿Quieres elegir la aplicación: ${nombre}? Esta acción no se puede deshacer.`)) {
+                // Modifica el estado en Firebase a 'false' (Ocupado)
+                update(cartasRef, { [id]: false });
+                alert(`¡Asignación guardada! Tu aplicación es: ${nombre}.`);
+            }
+        }
+
+        // 3. BOTÓN PARA REINICIAR TODO EL TABLERO
+        document.getElementById("btnReset").addEventListener("click", () => {
+            if (confirm("¿Quieres restablecer todas las cartas para una nueva clase?")) {
+                const reinicio = {};
+                infoApps.forEach(app => reinicio[app.id] = true);
+                update(cartasRef, reinicio);
+            }
+        });
+    </script>
+</body>
+</html>
