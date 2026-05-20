@@ -12,8 +12,8 @@
             margin: 0; 
             padding: 20px; 
         }
-        h1 { color: #1e293b; margin-bottom: 5px; }
-        p { color: #64748b; margin-bottom: 30px; }
+        h1 { color: #1e293b; margin-bottom: 5px; font-size: 1.8rem; }
+        p { color: #64748b; margin-bottom: 30px; font-size: 1rem; }
         
         .grid { 
             display: grid; 
@@ -55,7 +55,7 @@
         /* Estado Revelada / Ocupada (Gris) */
         .card.revelada { 
             background: #f1f5f9; 
-            color: #94a3b8; 
+            color: #1e293b; 
             cursor: not-allowed; 
             border: 2px dashed #cbd5e1; 
         }
@@ -71,6 +71,20 @@
             object-fit: contain; 
             margin-bottom: 12px;
             filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .propietario {
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            color: #475569;
+            margin-top: 4px;
+            background: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 4px;
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .btn-reset { 
@@ -91,7 +105,7 @@
 <body>
 
     <h1>Desafío: Elige una aplicación sorpresa</h1>
-    <p>Toca una carta azul para revelar un logo. ¡Tu misión será identificar qué aplicación es!</p>
+    <p>Toca una carta azul para ingresar tu nombre y revelar tu logo asignado.</p>
 
     <div class="grid" id="tablero"></div>
 
@@ -102,7 +116,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Tus credenciales de Firebase configuradas correctamente
         const firebaseConfig = {
             apiKey: "AIzaSyAMPkjq7xwl8-6_gy307s8-3TnW7prIDEE",
             authDomain: "cartapps-2b27c.firebaseapp.com",
@@ -113,12 +126,10 @@
             appId: "1:325435010427:web:ed5ce6f7f072e8995761de"
         };
 
-        // Inicializar la conexión
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const cartasRef = ref(db, "cartasClase");
 
-        // Tu listado de las 7 aplicaciones con rutas de imagen
         const infoApps = [
             { id: "1", nombre: "airtable", img: "imagenes/airtable.png" },
             { id: "2", nombre: "explaineverything", img: "imagenes/explaineverything.png" },
@@ -137,24 +148,23 @@
             tablero.innerHTML = ""; 
 
             infoApps.forEach(app => {
-                const estaDisponible = estados[app.id] !== false; 
+                // Ahora guardamos el nombre dentro de la base de datos, si no hay nombre está disponible
+                const nombreDueño = estados[app.id];
+                const estaDisponible = !nombreDueño; 
 
                 const cartaHTML = document.createElement("div");
                 cartaHTML.classList.add("card", estaDisponible ? "disponible" : "revelada");
 
                 if (estaDisponible) {
-                    // Diseño oculta (Sorpresa)
                     cartaHTML.innerHTML = `
                         <div class="logo-placeholder">❓</div>
                         <div>Toca para elegir</div>
                     `;
-                    // Al hacer clic, se ejecuta directamente sin preguntar
                     cartaHTML.addEventListener("click", () => seleccionarCarta(app.id));
                 } else {
-                    // Diseño revelada (Solo muestra la imagen del logo, el nombre queda oculto)
                     cartaHTML.innerHTML = `
-                        <img src="${app.img}" alt="Logo aplicación" class="card-img">
-                        <div style="font-size: 0.85rem; font-weight: normal; color: #64748b;">(Ocupada)</div>
+                        <img src="${app.img}" alt="Logo" class="card-img">
+                        <div class="propietario" title="${nombreDueño}">👤 ${nombreDueño}</div>
                     `;
                 }
 
@@ -162,24 +172,30 @@
             });
         });
 
-        // 2. ACCIÓN DIRECTA AL SELECCIONAR UNA CARTA (Sin confirmación previa)
+        // 2. SELECCIÓN PIDIENDO NOMBRE
         function seleccionarCarta(id) {
-            // Se actualiza Firebase de inmediato
-            update(cartasRef, { [id]: false });
-            alert("¡Carta seleccionada! Descubre qué herramienta te tocó mediante su logo.");
+            const nombreEstudiante = prompt("Por favor, ingresa tu Nombre y Apellido para revelar la carta:");
+            
+            // Validamos que no deje el nombre vacío ni cancele el cuadro
+            if (nombreEstudiante !== null && nombreEstudiante.trim() !== "") {
+                // Guardamos el string del nombre en lugar de un booleano
+                update(cartasRef, { [id]: nombreEstudiante.trim() });
+            } else if (nombreEstudiante !== null) {
+                alert("Debes ingresar un nombre válido para reclamar la carta.");
+            }
         }
 
-        // 3. BOTÓN PARA REINICIAR CON CÓDIGO DE SEGURIDAD (456321)
+        // 3. REINICIAR CON CÓDIGO (Elimina los nombres y las vuelve a poner a disposición)
         document.getElementById("btnReset").addEventListener("click", () => {
             const codigoIntroducido = prompt("Ingrese el código de 6 dígitos para reiniciar el tablero:");
             
             if (codigoIntroducido === "456321") {
                 const reinicio = {};
-                infoApps.forEach(app => reinicio[app.id] = true);
+                infoApps.forEach(app => reinicio[app.id] = null); // 'null' limpia los nodos en Firebase
                 update(cartasRef, reinicio);
-                alert("El tablero ha sido reiniciado con éxito. Todas las cartas vuelven a estar disponibles.");
+                alert("El tablero ha sido reiniciado. Todas las cartas están libres.");
             } else if (codigoIntroducido !== null) {
-                alert("Código incorrecto. No tienes permisos para reiniciar el tablero.");
+                alert("Código incorrecto.");
             }
         });
     </script>
