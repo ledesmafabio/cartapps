@@ -166,11 +166,11 @@
 
         // 2. ACCIÓN AL SELECCIONAR UNA CARTA
         function seleccionarCarta(id, nombre) {
-            if (confirm(`¿Quieres elegir esta aplicación? Esta acción no se puede deshacer.`)) {
+            //if (confirm(`¿Quieres elegir esta aplicación? Esta acción no se puede deshacer.`)) {
                 // Modifica el estado en Firebase a 'false' (Ocupado)
                 update(cartasRef, { [id]: false });
                 alert(`¡Asignación guardada! Tu aplicación es: ${nombre}.`);
-            }
+            //}
         }
 
         // 3. BOTÓN PARA REINICIAR TODO EL TABLERO
