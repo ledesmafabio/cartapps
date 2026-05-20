@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Selección de Aplicaciones</title>
+    <title>Desafío: Selección de Aplicaciones</title>
     <style>
         body { 
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; 
@@ -66,8 +66,8 @@
         }
         
         .card-img {
-            width: 70px; 
-            height: 70px; 
+            width: 85px; 
+            height: 85px; 
             object-fit: contain; 
             margin-bottom: 12px;
             filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));
@@ -90,8 +90,8 @@
 </head>
 <body>
 
-    <h1>Elige una aplicación para tu proyecto</h1>
-    <p>Toca una carta azul para descubrir tu aplicación asignada. Una vez seleccionada, dejará de estar disponible.</p>
+    <h1>Desafío: Elige una aplicación sorpresa</h1>
+    <p>Toca una carta azul para revelar un logo. ¡Tu misión será identificar qué aplicación es!</p>
 
     <div class="grid" id="tablero"></div>
 
@@ -102,15 +102,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // ⚠️ PEGA AQUÍ TUS CREDENCIALES DE LA CONSOLA DE FIREBASE ⚠️
+        // Tus credenciales de Firebase configuradas correctamente
         const firebaseConfig = {
-	apiKey: "AIzaSyAMPkjq7xwl8-6_gy307s8-3TnW7prIDEE",
-	authDomain: "cartapps-2b27c.firebaseapp.com",
-	databaseURL: "https://cartapps-2b27c-default-rtdb.firebaseio.com/",
-	projectId: "cartapps-2b27c",
-	storageBucket: "cartapps-2b27c.firebasestorage.app",
-	messagingSenderId: "325435010427",
-	appId: "1:325435010427:web:ed5ce6f7f072e8995761de"
+            apiKey: "AIzaSyAMPkjq7xwl8-6_gy307s8-3TnW7prIDEE",
+            authDomain: "cartapps-2b27c.firebaseapp.com",
+            databaseURL: "https://cartapps-2b27c-default-rtdb.firebaseio.com/",
+            projectId: "cartapps-2b27c",
+            storageBucket: "cartapps-2b27c.firebasestorage.app",
+            messagingSenderId: "325435010427",
+            appId: "1:325435010427:web:ed5ce6f7f072e8995761de"
         };
 
         // Inicializar la conexión
@@ -118,45 +118,43 @@
         const db = getDatabase(app);
         const cartasRef = ref(db, "cartasClase");
 
-        // Listado de las 7 aplicaciones configuradas con sus respectivas imágenes
+        // Tu listado de las 7 aplicaciones con rutas de imagen
         const infoApps = [
-            { id: "1", nombre: "AirTable", imagen: "imagenes/airtable.png" },
-            { id: "2", nombre: "ExplainEverything", imagen: "imagenes/explaineverything.png" },
-            { id: "3", nombre: "FlipGrid", imagen: "imagenes/flipgrid.png" },
-            { id: "4", nombre: "GoConqr", imagen: "imagenes/goconqr.png" },
-            { id: "5", nombre: "PollEverywhere", imagen: "imagenes/polleverywhere.png" },
-            { id: "6", nombre: "scoopit", imagen: "imagenes/scoopit.png" },
-            { id: "7", nombre: "Stormboard", imagen: "imagenes/stormboard.png" }
+            { id: "1", nombre: "airtable", img: "imagenes/airtable.png" },
+            { id: "2", nombre: "explaineverything", img: "imagenes/explaineverything.png" },
+            { id: "3", nombre: "flipgrid", img: "imagenes/flipgrid.png" },
+            { id: "4", nombre: "goconqr", img: "imagenes/goconqr.png" },
+            { id: "5", nombre: "polleverywhere", img: "imagenes/polleverywhere.png" },
+            { id: "6", nombre: "scoopit", img: "imagenes/scoopit.png" },
+            { id: "7", nombre: "stormboard", img: "imagenes/stormboard.png" }
         ];
 
         const tablero = document.getElementById("tablero");
 
-        // 1. ESCUCHAR CAMBIOS EN TIEMPO REAL (Actualiza las pantallas de todos los alumnos)
+        // 1. ESCUCHAR CAMBIOS EN TIEMPO REAL
         onValue(cartasRef, (snapshot) => {
             const estados = snapshot.val() || {};
-            tablero.innerHTML = ""; // Limpiar el contenedor antes de redibujar los cambios
+            tablero.innerHTML = ""; 
 
             infoApps.forEach(app => {
-                // Si la carta no figura en la base de datos como falsa, se asume disponible (true)
                 const estaDisponible = estados[app.id] !== false; 
 
                 const cartaHTML = document.createElement("div");
                 cartaHTML.classList.add("card", estaDisponible ? "disponible" : "revelada");
 
                 if (estaDisponible) {
-                    // Diseño cuando está tapada
+                    // Diseño oculta (Sorpresa)
                     cartaHTML.innerHTML = `
                         <div class="logo-placeholder">❓</div>
                         <div>Toca para elegir</div>
                     `;
-                    // Evento de selección
-                    cartaHTML.addEventListener("click", () => seleccionarCarta(app.id, app.nombre));
+                    // Al hacer clic, se ejecuta directamente sin preguntar
+                    cartaHTML.addEventListener("click", () => seleccionarCarta(app.id));
                 } else {
-                    // Diseño cuando ya está revelada (Muestra la imagen del logo)
+                    // Diseño revelada (Solo muestra la imagen del logo, el nombre queda oculto)
                     cartaHTML.innerHTML = `
-                        <img src="${app.imagen}" alt="${app.nombre}" class="card-img">
-                        <div>${app.nombre}</div>
-                        <div style="font-size: 0.8rem; font-weight: normal; margin-top: 4px;">(Ocupada)</div>
+                        <img src="${app.img}" alt="Logo aplicación" class="card-img">
+                        <div style="font-size: 0.85rem; font-weight: normal; color: #64748b;">(Ocupada)</div>
                     `;
                 }
 
@@ -164,21 +162,24 @@
             });
         });
 
-        // 2. ACCIÓN AL SELECCIONAR UNA CARTA
-        function seleccionarCarta(id, nombre) {
-            //if (confirm(`¿Quieres elegir esta aplicación? Esta acción no se puede deshacer.`)) {
-                // Modifica el estado en Firebase a 'false' (Ocupado)
-                update(cartasRef, { [id]: false });
-                alert(`¡Asignación guardada! Tu aplicación es: ${nombre}.`);
-            //}
+        // 2. ACCIÓN DIRECTA AL SELECCIONAR UNA CARTA (Sin confirmación previa)
+        function seleccionarCarta(id) {
+            // Se actualiza Firebase de inmediato
+            update(cartasRef, { [id]: false });
+            alert("¡Carta seleccionada! Descubre qué herramienta te tocó mediante su logo.");
         }
 
-        // 3. BOTÓN PARA REINICIAR TODO EL TABLERO
+        // 3. BOTÓN PARA REINICIAR CON CÓDIGO DE SEGURIDAD (456321)
         document.getElementById("btnReset").addEventListener("click", () => {
-            if (confirm("¿Quieres restablecer todas las cartas para una nueva clase?")) {
+            const codigoIntroducido = prompt("Ingrese el código de 6 dígitos para reiniciar el tablero:");
+            
+            if (codigoIntroducido === "456321") {
                 const reinicio = {};
                 infoApps.forEach(app => reinicio[app.id] = true);
                 update(cartasRef, reinicio);
+                alert("El tablero ha sido reiniciado con éxito. Todas las cartas vuelven a estar disponibles.");
+            } else if (codigoIntroducido !== null) {
+                alert("Código incorrecto. No tienes permisos para reiniciar el tablero.");
             }
         });
     </script>
